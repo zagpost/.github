@@ -66,14 +66,21 @@ These are non-negotiable constraints, not aspirational goals:
 
 ## Technical Stack
 
-### Frontend
+### Frontend (Web)
 
 - **Framework:** SvelteKit (SPA/PWA mode)
 - **Language:** TypeScript
 - **Styling:** TailwindCSS
 - **Local storage:** Dexie.js (IndexedDB wrapper) - encrypted message cache stored locally on the user's device
 - **Crypto:** WebCrypto API (browser-native, no custom algorithms)
-- **Mobile (later):** Capacitor wrapping the same SvelteKit codebase for iOS/Android OR native apps (TBD based on feasibility and resource constraints)
+
+### Mobile (Later)
+
+Native apps for iOS and Android. Not a Capacitor/WebView wrapper - see decision rationale below.
+
+- **iOS:** Swift + SwiftUI; CryptoKit + Secure Enclave for key storage; SwiftData for local message cache
+- **Android:** Kotlin + Jetpack Compose; Android Keystore + Tink for key storage; Room for local message cache
+- **Real-time:** Native WebSocket clients (`URLSessionWebSocketTask` on iOS, Ktor/OkHttp on Android)
 
 ### Backend
 
@@ -82,13 +89,12 @@ These are non-negotiable constraints, not aspirational goals:
 - **Database:** TimescaleDB (PostgreSQL-based, optimized for time-series data)
 - **Object storage:** S3-compatible (TDB: Cloudflare R2 preferred - zero egress fees - however, EU-hosted options are disputed as of mid-2026)
 - **Real-time:** WebSockets (TDB: Maybe a Gateway Websocket service)
-- **Push notifications:** Web Push API
+- **Push notifications:** Web Push API (web); APNs / FCM (native apps, later)
 
 ### Infrastructure
 
-- **Hosting:** EU region, Cloudflare Pages for the marketing site; App is TDB; Hetzner Dedicated Server or similar for backend (TDB)
+- **Hosting:** EU region, Cloudflare Pages for the marketing site; App is TDB (maybe CF Workers or Pages); Hetzner Dedicated Server or similar for backend (TDB)
 - **CI/CD:** GitHub Actions - type check + lint on every PR, preview deployments for PRs
-- **Monorepo tooling:** Turborepo (pnpm workspaces)
 
 ### Crypto / Protocol
 
@@ -105,30 +111,39 @@ These are non-negotiable constraints, not aspirational goals:
 
 All repos live under the **`Zag Post`** GitHub organisation.
 
-| Repo      | Visibility        | Purpose                                                               |
-| --------- | ----------------- | --------------------------------------------------------------------- |
-| `.github` | Public            | Org profile README, SECURITY.md, guidelines, etc                      |
-| `app`     | Public            | SvelteKit monorepo: `apps/web/` + `packages/ui/` + `packages/crypto/` |
-| `website` | Public            | Marketing site and landing pages                                      |
-| `legal`   | Public            | Privacy policy, terms of service, transparency reports                |
-| `server`  | Private (for now) | Backend API, auth, delivery, attachment services                      |
-| `infra`   | Private           | Terraform/Docker/deployment config                                    |
+| Repo      | Visibility        | Purpose                                                    |
+| --------- | ----------------- | ---------------------------------------------------------- |
+| `.github` | Public            | Org profile README, SECURITY.md, guidelines, etc           |
+| `app`     | Public            | SvelteKit PWA                                              |
+| `website` | Public            | Marketing site and landing pages                           |
+| `legal`   | Public            | Privacy policy, terms of service, transparency reports     |
+| `server`  | Private (for now) | Backend API, auth, delivery, attachment services           |
+| `infra`   | Private           | Terraform/Docker/deployment config                         |
 
-### Monorepo layout (`app` repo)
+### Web app layout (`app` repo)
+
+A plain SvelteKit project - no monorepo tooling, no workspace packages.
 
 ```
 app/
-├── apps/
-│   └── web/             ← SvelteKit PWA
-├── packages/
-│   ├── ui/              ← Shared component library
-│   └── crypto/          ← WebCrypto wrappers - clean boundary, future audit target
+├── src/
+│   ├── lib/
+│   │   └── crypto/ - WebCrypto wrappers (future audit target)
+│   │       ├── keys.ts
+│   │       ├── messages.ts
+│   │       ├── attachments.ts
+│   │       ├── groups.ts
+│   │       ├── identity.ts
+│   │       └── recovery.ts
+│   ├── routes/
+│   └── app.html
 ├── PLAN.md
-├── ARCHITECTURE.md      ← Architecture Decision Records (ADRs)
-└── turbo.json
+├── ARCHITECTURE.md - Architecture Decision Records (ADRs)
+├── package.json
+└── svelte, vite, ... config stuff
 ```
 
-#### `crypto` package
+#### `src/lib/crypto/` module
 
 - `keys.ts` - generateKeyPair(), exportKey(), importKey(), storeKeyInIndexedDB()
 - `messages.ts` - encryptMessage(plaintext, recipientPublicKey) → ciphertext --- decryptMessage(ciphertext, myPrivateKey) → plaintext
@@ -136,6 +151,8 @@ app/
 - `groups.ts` - deriveGroupKey(), rotateGroupKey(), addMemberToGroup()
 - `identity.ts` - fingerprint(publicKey) → human-readable safety number
 - `recovery.ts` - encryptKeyBackup(keyMaterial, password) → encryptedBackup --- decryptKeyBackup(encryptedBackup, password) → keyMaterial
+
+---
 
 ## Development Roadmap
 
@@ -149,6 +166,8 @@ Target: **Private beta by December 2026** (7 months from project start in May 20
 | M3 - Media & Polish   | Oct 2026     | Photo/file sharing, voice notes, UX polish                               |
 | M4 - Push & Beta Prep | Nov 2026     | Web push notifications, export/import, admin ops, monitoring             |
 | M5 - Private Beta     | Dec 2026     | 50–100 invited users, donation flow live, public security docs           |
+
+Native mobile apps are post-beta, not on the v1 roadmap.
 
 ---
 
@@ -182,7 +201,19 @@ The model is: free on the web for everyone, a nominal charge for native app conv
 
 ### Why SvelteKit?
 
-Small compiled bundles (important for privacy-hardened browsers), client-heavy architecture suits doing crypto in the browser, good PWA support, ergonomic stores for local-first state. The same codebase can be wrapped with Capacitor for native mobile apps later.
+Small compiled bundles (important for privacy-hardened browsers), client-heavy architecture suits doing crypto in the browser, good PWA support, ergonomic stores for local-first state.
+
+### Why a plain SvelteKit project and not a monorepo?
+
+There is only one web app and no packages shared between multiple consumers. A monorepo with Turborepo and pnpm workspaces would add build tooling overhead (separate `package.json`, tsconfig, build steps per package, workspace linking) for no real benefit. If a second consumer ever appears, extracting a package is a straightforward refactor. Starting simple is the right default.
+
+### Why is the crypto module in `src/lib/crypto/` and not a separate package?
+
+The crypto module is only consumed by the web app - there is no second consumer that would justify the overhead of a standalone package. It lives in `src/lib/crypto/` to enforce a clear internal boundary: crypto logic cannot import anything from routes or UI components, which is verified by code review. An auditor can be pointed at this directory just as cleanly as a separate package. If a native mobile client eventually needs shared crypto logic, that decision can be made at the time with full context.
+
+### Why native mobile apps instead of Capacitor?
+
+Zag Post's core value proposition is E2EE and verifiable privacy. Capacitor runs crypto inside a WKWebView (iOS) or WebView (Android), which means private keys end up in IndexedDB within a WebView sandbox - a meaningfully weaker security posture than platform-native key storage. Native apps can use the iOS Secure Enclave (via CryptoKit) and Android Keystore, where private keys can be hardware-bound and non-exportable. Additionally, iOS aggressively kills WebView background processes, which creates reliability problems for a messaging app's WebSocket connection. The team has the skills to build native (Swift/SwiftUI, Kotlin/Jetpack Compose), so Capacitor's main advantage - avoiding native development - does not apply here.
 
 ### Why not build on Matrix?
 
@@ -194,7 +225,7 @@ Signal's server infrastructure is closed and does not allow third-party clients 
 
 ### Why closed server code initially?
 
-Moving fast to beta without the overhead of community contributions to the server. The client code (SvelteKit, crypto package) will be open-sourced first because that is what users can verify. Server open-sourcing and self-hosting support come in a later phase.
+Moving fast to beta without the overhead of community contributions to the server. The client code (SvelteKit, crypto module) will be open-sourced first because that is what users can verify. Server open-sourcing and self-hosting support come in a later phase.
 
 ### Why no federation in v1?
 
