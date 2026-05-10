@@ -2,84 +2,101 @@
 
 ## Mission
 
-Build a small, privacy-first messenger for groups that is easier than Matrix, more private than WhatsApp, and simple enough for normal people to use daily.
+Build a small, privacy-first messenger for families and friend groups that is easier than Matrix, more private than WhatsApp, and simple enough for normal people to use daily.
 
 ## Product principles
 
-- No ads.
+- No ads, ever
 - No phone-number-first identity
-- E2EE messages and attachments
-- Minimal metadata retention
+- E2EE messages and attachments — server stores ciphertext only
+- Minimal metadata retention, documented publicly
 - EU-first hosting
-- Web app first, mobile later
+- Web app first, native mobile later
 - Clear export path; no user lock-in
-- No "AI training on user content."
-- No server- and client-side scanning of private chats
+- No AI training on user content
+- No server- or client-side scanning of private chats
 
 ## Non-goals for v1
 
-- No federation.
-- No public communities.
-- No bots/platform ecosystem.
-- No custom crypto.
-- No broad enterprise feature set.
-- No voice/video in first release unless absolutely necessary.
+- No federation
+- No public communities or channels
+- No bots or platform ecosystem
+- No custom cryptography
+- No enterprise features
+- No voice/video
+- No self-hosting
+- No native mobile apps (post-beta)
 
 ## v1 audience
 
-- Small teams
-- Families/friend groups
-- Privacy-conscious communities that currently use WhatsApp/Discord reluctantly
+- Families and friend groups (3–100 people) currently using WhatsApp reluctantly
+- Privacy-conscious small teams and clubs in the EU
 
-## Company / org setup
+---
 
-- Create GitHub org.
-- Reserve main domain and subdomains.
+## Org setup
+
+- GitHub org: github.com/Zag-Post
+- Reserve main domain and subdomains
 - Set up password manager, hardware keys, and separate admin accounts
-- Set up legal/business entity only when needed for billing and terms (later is ok)
+- Legal/business entity only when needed for billing (later is fine)
 
 ## Repositories
 
-- .github
-- webapp
-- server
-- protocol (?)
-- website
-- legal
-- status
+| Repo      | Visibility        | Purpose                                                |
+| --------- | ----------------- | ------------------------------------------------------ |
+| `.github` | Public            | Org profile README, SECURITY.md, contribution guidelines |
+| `app`     | Public            | SvelteKit PWA (plain project, no monorepo)             |
+| `website` | Public            | Marketing site and landing pages                       |
+| `legal`   | Public            | Privacy policy, terms of service, transparency reports |
+| `server`  | Private (for now) | Backend API, auth, delivery, attachment services       |
+| `infra`   | Private           | Terraform/Docker/deployment config                     |
+
+---
 
 ## Technical direction
 
 ### Frontend
 
-- SvelteKit
-- IndexedDB for local encrypted cache
+- SvelteKit — plain project, no monorepo tooling
+- `src/lib/crypto/` — WebCrypto wrappers; clear internal boundary, future audit target. Not a separate package (only consumed by the web app)
+- Dexie.js + IndexedDB for local encrypted message cache
 - Service worker for offline shell
-- Optional push notifications
+- Web Push for notifications
+
+### Mobile (post-beta)
+
+- Native iOS (Swift + SwiftUI) and Android (Kotlin + Jetpack Compose)
+- Key storage: iOS Secure Enclave via CryptoKit; Android Keystore via Tink
+- Local cache: SwiftData (iOS), Room (Android)
+- Not Capacitor — WebView crypto has a weaker security posture and iOS kills WebView background processes aggressively
 
 ### Backend
 
-- Auth service
-- Delivery service
-- Attachment service
-- Admin/support service separated from core systems
-- Postgres for account/device metadata
-- Object storage for encrypted blobs
+- Rust (Actix-web or similar)
+- TimescaleDB for account/device/delivery metadata
+- S3-compatible object storage for encrypted attachment blobs (Cloudflare R2 preferred; EU hosting TBD)
+- WebSockets for real-time delivery (gateway service TBD)
+- Auth, delivery, and attachment services separated from each other
+- APNs/FCM for native push (post-beta)
 
 ### Crypto / protocol
 
-- Evaluate MLS-based group encryption
-- Separate protocol spec from implementation
-- Device-based keys
-- Encrypted attachments with per-file keys
-- Server stores ciphertext and minimal routing metadata only
+- Hybrid E2EE: message encrypted with symmetric key, symmetric key encrypted with recipient public key(s)
+- Evaluating MLS (RFC 9420) for group key agreement — forward secrecy and post-compromise security
+- Device-based key material, generated client-side, never transmitted in cleartext
+- Encrypted attachments with per-file keys; decryption key travels inside the E2EE envelope
+- TOFU for v1; opt-in key verification UI
+- Phone numbers stored as hashes only (SHA-256 + global salt)
 
-## Metadata policy draft
+### Metadata policy
 
 - No ad identifiers
-- No third-party analytics in app
+- No third-party analytics in the app
 - Short retention for IP and delivery logs
-- Clear user-visible retention table in docs
+- User-visible retention table published in public docs
+
+---
 
 ## Environments
 
@@ -87,57 +104,66 @@ Build a small, privacy-first messenger for groups that is easier than Matrix, mo
 - Staging
 - Production
 
-## Websites
+## Websites / domains
 
-- main marketing site
-- docs site
-- legal site
-- status page
-- app domain
+- Marketing site
+- App domain
+- Docs site
+- Status page
+- Legal pages
+
+---
 
 ## Security baseline
 
-- Mandatory 2FA/hardware keys for admins
+- Mandatory 2FA / hardware keys for all admins
 - Secret management from day one
-- Reproducible builds where possible
 - Dependency review and SAST in CI
 - External security review before wide launch
+- Reproducible builds where feasible
+- 90-day coordinated disclosure policy; no legal action against good-faith researchers
+
+---
 
 ## Milestones
 
-### M0 - Foundation
+Target: **private beta by December 2026**
 
-- Name, domain, org, repos, base docs
-- Architecture decision records
-- UI concept and design principles
+### M0 - Foundation (May–Jun 2026)
 
-### M1 - Clickable prototype
+- Name, domain, org, repos, SECURITY.md
+- PLAN.md and ARCHITECTURE.md (ADRs)
+- UI concept, design principles, and non-functional prototype
 
-- SvelteKit shell
-- Auth flow mock
-- DM UI
-- Group UI
-- Local-only encrypted message store
+### M1 - Auth & Plumbing (Jul 2026)
 
-### M2 - Functional alpha
+- Real accounts and device registration
+- Login flow
+- WebSocket connection
+- Plaintext messaging (no E2EE yet — functional scaffolding only)
 
-- Real accounts/devices
-- Encrypted DMs
-- Encrypted small groups
-- Attachment upload/download
-- Basic invite flow
+### M2 - E2EE (Aug–Sep 2026)
 
-### M3 - Private beta
+- End-to-end encrypted DMs
+- End-to-end encrypted group messages
+- Encrypted attachment upload and download
 
-- Reliability fixes
-- Export/import
-- Push notifications
+### M3 - Media & Polish (Oct 2026)
+
+- Photo and file sharing
+- Voice notes
+- UX polish and reliability fixes
+
+### M4 - Push & Beta Prep (Nov 2026)
+
+- Web push notifications
+- Data export/import
 - Admin ops, backups, monitoring
-- Privacy/legal pages live
+- Privacy policy, terms of service, and transparency page live
 
-### M4 - Launch
+### M5 - Private Beta (Dec 2026)
 
-- Billing or donation flow
-- Public security docs (github enough?)
-- Independent review summary
-- Transparency page
+- 50–100 invited users
+- Donation flow live (Stripe/Ko-fi)
+- Public security documentation
+- Independent review summary (or pre-review engagement)
