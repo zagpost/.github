@@ -1,4 +1,4 @@
-# Zag Post
+> # [Zag post](https://zagpost.org)
 
 **Private messaging for people who actually mean it.**
 
@@ -54,7 +54,7 @@ We make specific, technical commitments - not vague promises.
 
 Found a vulnerability? Please report it responsibly.
 
-> Use [GitHub Private Vulnerability Reporting](https://github.com/Zag-Post/.github/security/advisories/new), email **security@zag-post.com** or send an encrypted message via https://keybase.io/thelukez
+> Use [GitHub Private Vulnerability Reporting](https://github.com/Zag-Post/.github/security/advisories/new), email **security@zagpost.org** or send an encrypted message via https://keybase.io/thelukez
 
 We follow a 90-day coordinated disclosure policy and will never pursue legal action against good-faith researchers. See [`SECURITY.md`](.github/SECURITY.md) for details.
 
