@@ -12,4 +12,12 @@ We prioritize the needs and experiences of our users in every aspect of our prod
 
 That means, listening to user feedback, conducting user research, and continuously iterating on our designs to meet the evolving needs of our users.
 
+## 3. Simplicity
+
+Build what only is necessary now, avoiding overengineering, and favoring maintainable code.
+
+## 4. Quality over Quantity
+
+We focus on doing the right things well rather than rushing out excessive, buggy features.
+
 _That's it for now. More to come..._
