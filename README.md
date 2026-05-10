@@ -1,2 +1,2 @@
 # .github
-issue templates, security, funding, code of conduct
+issue templates, security, funding, guidelines, etc
