@@ -29,11 +29,11 @@ This organization is being set up now. Repositories, documentation, and the firs
 
 ## Repositories
 
-| Repository                                       | Description                                                 |
-|--------------------------------------------------|-------------------------------------------------------------|
-| [`website`](https://github.com/Zag-Post/website) | Marketing site and landing pages                            |
-| [`legal`](https://github.com/Zag-Post/legal)     | Privacy policy, terms of service, transparency reports      |
-| [`.github`](https://github.com/Zag-Post/.github) | Org-wide defaults, security policy, contributing guidelines |
+| Repository                                       | Description                                            |
+|--------------------------------------------------|--------------------------------------------------------|
+| [`website`](https://github.com/Zag-Post/website) | Marketing site and landing pages                       |
+| [`legal`](https://github.com/Zag-Post/legal)     | Privacy policy, terms of service, transparency reports |
+| [`.github`](https://github.com/Zag-Post/.github) | Org-wide defaults, security policy, guidelines, etc    |
 
 _There's more to come..._
 
