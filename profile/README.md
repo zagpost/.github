@@ -47,7 +47,7 @@ We make specific, technical commitments - not vague promises.
 
 ## Values
 
-We follow a set of core values that guide our mission and culture. See [VALUES.md](VALUES.md) for details.
+We follow a set of core values that guide our mission and culture. See [VALUES.md](../VALUES.md) for details.
 
 ## Security
 
