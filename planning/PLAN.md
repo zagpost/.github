@@ -36,21 +36,21 @@ Build a small, privacy-first messenger for families and friend groups that is ea
 
 ## Org setup
 
-- GitHub org: github.com/Zag-Post
+- GitHub org: github.com/zagpost
 - Reserve main domain and subdomains
 - Set up password manager, hardware keys, and separate admin accounts
 - Legal/business entity only when needed for billing (later is fine)
 
 ## Repositories
 
-| Repo      | Visibility        | Purpose                                                |
-| --------- | ----------------- | ------------------------------------------------------ |
+| Repo      | Visibility        | Purpose                                                  |
+| --------- | ----------------- | -------------------------------------------------------- |
 | `.github` | Public            | Org profile README, SECURITY.md, contribution guidelines |
-| `app`     | Public            | SvelteKit PWA (plain project, no monorepo)             |
-| `website` | Public            | Marketing site and landing pages                       |
-| `legal`   | Public            | Privacy policy, terms of service, transparency reports |
-| `server`  | Private (for now) | Backend API, auth, delivery, attachment services       |
-| `infra`   | Private           | Terraform/Docker/deployment config                     |
+| `app`     | Public            | SvelteKit PWA (plain project, no monorepo)               |
+| `website` | Public            | Marketing site and landing pages                         |
+| `legal`   | Public            | Privacy policy, terms of service, transparency reports   |
+| `server`  | Private (for now) | Backend API, auth, delivery, attachment services         |
+| `infra`   | Private           | Terraform/Docker/deployment config                       |
 
 ---
 
@@ -73,12 +73,77 @@ Build a small, privacy-first messenger for families and friend groups that is ea
 
 ### Backend
 
-- Rust (Actix-web or similar)
-- TimescaleDB for account/device/delivery metadata
+- Rust (for performance and safety)
 - S3-compatible object storage for encrypted attachment blobs (Cloudflare R2 preferred; EU hosting TBD)
-- WebSockets for real-time delivery (gateway service TBD)
 - Auth, delivery, and attachment services separated from each other
 - APNs/FCM for native push (post-beta)
+
+### Server Framework
+
+No drop-in Rust messaging server exists (unlike WhatsApp's Ejabberd). Build on:
+
+- **Axum** — HTTP + WebSocket handling (Tokio-native)
+- **Tokio** — async runtime
+- **NATS** — internal pub/sub bus for cross-node message routing (replaces Erlang/OTP message passing)
+- **tokio-tungstenite** — WebSocket protocol (used under Axum)
+  NATS routes messages between Rust nodes so horizontal scaling works without sticky sessions:
+  `Client A → Rust Node 1 → NATS → Rust Node 2 → Client B`
+
+**Conduwuit** (Rust Matrix homeserver) is the only "existing server" option, but only relevant if adopting the Matrix protocol and federation — not suitable for a closed WhatsApp-like app.
+
+### Database Layer
+
+#### Valkey (Redis-compatible) — Ephemeral Messages
+
+- Stores encrypted messages per recipient as a Redis List: `msg:{user_id}`
+- TTL of 7 days; deleted on delivery
+- Rust crate: `redis` with `deadpool-redis` for connection pooling
+- Valkey chosen over Redis for cleaner open-source licensing (BSD, Linux Foundation)
+
+#### PostgreSQL — Pre-keys
+
+- Stores user identity keys and one-time pre-keys
+- Pre-keys are atomically claimed and deleted on use (`FOR UPDATE SKIP LOCKED`)
+- Rust crate: `sqlx` with two pools (write → primary, read → replica)
+- Migrations via `sqlx-cli`
+
+### Scaling
+
+#### Vertical
+
+- Upgrade DB server hardware; cheapest first step
+- Always use **PgBouncer** in front of Postgres (`transaction` pool mode, ~20 real connections behind 1000 client connections)
+
+#### Horizontal
+
+- **Rust app servers**: stateless, scale freely behind NGINX (`least_conn` for WebSocket fairness)
+- **Postgres**: primary for writes, read replica for pre-key lookups
+- **Valkey**: single node + replica for most workloads; Valkey Cluster for high throughput (auto-shards keys, supported natively by `redis` crate)
+
+#### Order of operations
+
+PgBouncer → more app servers → read replica → Valkey Cluster → vertical scale DBs → Postgres sharding (last resort)
+
+### Deployment
+
+- Dockerized via `docker-compose` (app, Postgres, Valkey)
+- Multi-stage Dockerfile for lean Rust binary
+- NGINX as load balancer with WebSocket upgrade headers
+- PgBouncer as connection pooler between app nodes and Postgres
+
+### Tech Stack Summary
+
+| Layer                   | Technology |
+| ----------------------- | ---------- |
+| Server language         | Rust       |
+| HTTP + WebSockets       | Axum       |
+| Async runtime           | Tokio      |
+| Cross-node messaging    | NATS       |
+| Ephemeral message store | Valkey     |
+| Pre-key store           | PostgreSQL |
+| Connection pooler       | PgBouncer  |
+| Load balancer           | NGINX      |
+| Migrations              | sqlx-cli   |
 
 ### Crypto / protocol
 

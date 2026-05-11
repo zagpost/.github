@@ -6,7 +6,6 @@ Zag Post is a privacy-first messenger built for friends, families and small grou
 
 No phone number required. No metadata profiles. No scanning of private messages. No ads, ever.
 
-
 ## What we're building
 
 A small, focused messaging app where:
@@ -19,45 +18,40 @@ A small, focused messaging app where:
 
 We are building this in the open because privacy promises that can't be verified ain't worth much.
 
-
 ## Where we are
 
 🚧 **Early development** — targeting a private beta by end of 2026.
 
 This organization is being set up now. Repositories, documentation, and the first working code are coming soon.
 
-
 ## Repositories
 
-| Repository                                       | Description                                            |
-|--------------------------------------------------|--------------------------------------------------------|
-| [`website`](https://github.com/Zag-Post/website) | Marketing site and landing pages                       |
-| [`legal`](https://github.com/Zag-Post/legal)     | Privacy policy, terms of service, transparency reports |
-| [`.github`](https://github.com/Zag-Post/.github) | Org-wide defaults, security policy, guidelines, etc    |
+| Repository                                      | Description                                            |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| [`website`](https://github.com/zagpost/website) | Marketing site and landing pages                       |
+| [`legal`](https://github.com/zagpost/legal)     | Privacy policy, terms of service, transparency reports |
+| [`.github`](https://github.com/zagpost/.github) | Org-wide defaults, security policy, guidelines, etc    |
 
 _There's more to come..._
-
 
 ## Principles
 
 We make specific, technical commitments - not vague promises.
 
-1. **No ads, ever.** Zag-Post is funded by donations. Your data is not the product.
+1. **No ads, ever.** Zag Post is funded by donations. Your data is not the product.
 2. **Minimal metadata.** Message routing data is short-lived. We log as little as possible and document exactly what we do retain.
 3. **No server- and client-side content scanning.** Private chats are private. We do not scan, index, or train on your messages.
 4. **No phone number required.** You can add one and control whether others can find you by it. You can also remove it at any time.
 5. **EU hosting by default.** Your data does not leave the EU without your explicit consent.
 6. **Honest about trade-offs.** Where we make a compromise between convenience and privacy, we document it clearly.
 
-
 ## Security
 
 Found a vulnerability? Please report it responsibly.
 
-> Use [GitHub Private Vulnerability Reporting](https://github.com/Zag-Post/.github/security/advisories/new), email **security@zagpost.org** or send an encrypted message via https://keybase.io/thelukez
+> Use [GitHub Private Vulnerability Reporting](https://github.com/zagpost/.github/security/advisories/new), email security@zagpost.org or send an encrypted message via https://keybase.io/thelukez
 
 We follow a 90-day coordinated disclosure policy and will never pursue legal action against good-faith researchers. See [`SECURITY.md`](.github/SECURITY.md) for details.
-
 
 ## Stay in the loop
 
