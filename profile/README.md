@@ -45,6 +45,10 @@ We make specific, technical commitments - not vague promises.
 5. **EU hosting by default.** Your data does not leave the EU without your explicit consent.
 6. **Honest about trade-offs.** Where we make a compromise between convenience and privacy, we document it clearly.
 
+## Values
+
+We follow a set of core values that guide our mission and culture. See [VALUES.md](VALUES.md) for details.
+
 ## Security
 
 Found a vulnerability? Please report it responsibly.

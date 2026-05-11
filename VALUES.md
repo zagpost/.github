@@ -20,4 +20,8 @@ Build what only is necessary now, avoiding overengineering, and favoring maintai
 
 We focus on doing the right things well rather than rushing out excessive, buggy features.
 
+## 5. Transparency and Honesty
+
+We believe in being open and honest about our processes, decisions, and challenges. We will communicate clearly with users and be transparent about decisions that affect them.
+
 _That's it for now. More to come..._
