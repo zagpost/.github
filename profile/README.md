@@ -1,4 +1,4 @@
-> # [Zag post](https://zagpost.org)
+# [Zag post](https://zagpost.org)
 
 **Private messaging for people who actually mean it.**
 
