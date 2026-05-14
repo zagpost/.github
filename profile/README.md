@@ -1,6 +1,6 @@
 # [Zag post](https://zagpost.org)
 
-**Private messaging for people who actually mean it.**
+**Private messaging for the people.**
 
 Zag Post is a privacy-first messenger built for friends, families and small groups - people who want the convenience of WhatsApp without handing their metadata to an advertising company.
 
