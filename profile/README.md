@@ -34,7 +34,7 @@ This organization is being set up now. Repositories, documentation, and the firs
 
 _There's more to come..._
 
-## Principles
+## Commitments
 
 We make specific, technical commitments - not vague promises.
 

@@ -136,12 +136,17 @@ PgBouncer → more app servers → read replica → Valkey Cluster → vertical 
 
 ### Infrastructure & Deployment
 
-- **Hosting:** EU region, Cloudflare Pages for the marketing site; App is TDB (maybe CF Workers or Pages); Hetzner Dedicated Server or similar for backend (TDB)
+- **Hosting:** EU region, SvelteKit (SSG mode) deployed on Cloudflare Workers; App is TDB (maybe CF Workers or Pages); Hetzner Dedicated Server or similar for backend (TDB)
 - **CI/CD:** GitHub Actions - type check + lint on every PR, preview deployments for PRs
 - Dockerized via `docker-compose` (app, Postgres, Valkey)
 - Multi-stage Dockerfile for lean Rust binary
 - NGINX as load balancer with WebSocket upgrade headers
 - PgBouncer as connection pooler between app nodes and Postgres
+
+#### ADR: Marketing Site Deployment
+
+**Decision:** Deploy the marketing site using SvelteKit (SSG mode) on Cloudflare Workers.
+**Rationale:** SSG perfectly fits a static marketing site. Choosing Workers over Pages keeps the deployment toolchain consistent across our services.
 
 ### Tech Stack Summary
 

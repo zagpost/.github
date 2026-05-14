@@ -131,6 +131,11 @@ PgBouncer → more app servers → read replica → Valkey Cluster → vertical 
 - NGINX as load balancer with WebSocket upgrade headers
 - PgBouncer as connection pooler between app nodes and Postgres
 
+#### ADR: Marketing Site Deployment
+
+**Decision:** Deploy the marketing site using SvelteKit (SSG mode) on Cloudflare Workers.
+**Rationale:** SSG perfectly fits a static marketing site. Choosing Workers over Pages keeps the deployment toolchain consistent across our services.
+
 ### Tech Stack Summary
 
 | Layer                   | Technology |

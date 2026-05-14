@@ -1,6 +1,6 @@
 # Zag Post Values
 
-This document describes the values that Zag Post is archtectured around. These values are the guiding principles that shape our work and culture.
+This document describes the values that Zag Post is architected around. These values are the guiding principles that shape our work and culture.
 
 ## 1. Privacy
 
